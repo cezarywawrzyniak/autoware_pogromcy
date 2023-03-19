@@ -41,6 +41,7 @@ private:
   RunTestPtr run_test_{nullptr};
   void foo();
   void timer_callback();
+
   rclcpp::Subscription<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr subscription_;
   void get_topic(const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg) const;
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr pub_ack;
