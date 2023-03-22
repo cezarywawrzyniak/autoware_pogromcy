@@ -26,6 +26,7 @@
 #include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"
 #include "autoware_auto_control_msgs/msg/ackermann_control_command.hpp"
 #include "geometry_msgs/msg/twist_with_covariance_stamped.hpp"
+#include "autoware_auto_vehicle_msgs/msg/gear_command.hpp"
 using namespace std::chrono_literals;
 
 namespace run_test
@@ -45,6 +46,7 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr subscription_;
   void get_topic(const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg) const;
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr pub_ack;
+  rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::GearCommand>::SharedPtr pub_gear;
   rclcpp::TimerBase::SharedPtr timer_;
 };
 }  // namespace run_test

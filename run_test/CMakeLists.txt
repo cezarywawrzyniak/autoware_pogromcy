@@ -5,6 +5,7 @@ project(run_test)
 find_package(ament_cmake_auto REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(autoware_auto_control_msgs REQUIRED)
+find_package(autoware_auto_vehicle_msgs REQUIRED)
 
 ament_auto_find_build_dependencies(REQUIRED
   ${${PROJECT_NAME}_BUILD_DEPENDS}
