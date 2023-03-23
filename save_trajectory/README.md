@@ -9,8 +9,7 @@
     - Are there any other 3rd party dependencies required? -->
 
 ```bash
-rosdep install --from-paths src --ignore-src -y
-colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=On --packages-up-to save_trajectory
+colcon build --symlink-install --packages-select save_trajectory
 ```
 
 ## Usage
@@ -32,7 +31,7 @@ ros2 launch save_trajectory save_trajectory.launch.py
 
 | Name         | Type                  | Description  |
 | ------------ | --------------------- | ------------ |
-| `topic_name` | std_msgs::msg::String | Sample desc. |
+| `/ground_truth/pose` | geometry_msgs::msg::PoseStamped | Sample desc. |
 
 ### Output
 
