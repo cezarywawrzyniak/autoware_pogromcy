@@ -21,10 +21,7 @@ colcon build --symlink-install --packages-select run_test
 cd F1Tenth_v0.5
 ./F1Tenth_v0.5.x86_64
 ```
-New terminal:
-```bash
-ros2 launch f1tenth_launch f1tenth.launch.py map_path:=autoware_map/imola
-```
+
 New terminal:
 ```bash
 ros2 launch run_test run_test.launch.py

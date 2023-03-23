@@ -26,28 +26,19 @@ RunTestNode::RunTestNode(const rclcpp::NodeOptions & options)
   const int64_t param_name = this->declare_parameter("param_name", 456);
   run_test_->setParameters(param_name);
 
-  pub_ack = this->create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>("/control/command/control_cmd", 10);
-  // pub_gear = this->create_publisher<autoware_auto_vehicle_msgs::msg::GearCommand>("/control/command/gear_cmd", 10);
+  pub_ack = this->create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>("/control/command/control_cmd", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
   subscription_ = this->create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>("/sensing/vehicle_velocity_converter/twist_with_covariance", 10, std::bind(&RunTestNode::get_topic, this, std::placeholders::_1));
   timer_ = this->create_wall_timer(500ms, std::bind(&RunTestNode::timer_callback, this));
 }
 
 void RunTestNode::timer_callback()
 {
-  std::cout << "hello" << std::endl;
-  // auto mess2 = autoware_auto_vehicle_msgs::msg::GearCommand();
-  // mess2.command = 2;
-  // pub_gear->publish(mess2);
   auto message = autoware_auto_control_msgs::msg::AckermannControlCommand();
-  rclcpp::Time time_now = rclcpp::Clock().now();
-  message.stamp = time_now;
-  message.longitudinal.stamp = time_now;
-  message.lateral.stamp = time_now;
-  message.longitudinal.speed = 21.0;
+  // message.longitudinal.speed = 21.0;
   message.longitudinal.acceleration = 2.0;
-  message.longitudinal.jerk = 0.0;
-  message.lateral.steering_tire_angle = 0.5;
-  message.lateral.steering_tire_rotation_rate = 0.25;
+  // message.longitudinal.jerk = 0.0;
+  // message.lateral.steering_tire_angle = 0.5;
+  // message.lateral.steering_tire_rotation_rate = 0.25;
   pub_ack->publish(message);
   
 }
@@ -57,10 +48,7 @@ void RunTestNode::get_topic(const geometry_msgs::msg::TwistWithCovarianceStamped
   std::cout << msg->twist.twist.linear.x << std::endl;
 }
 
-// void RunTestNode::get_topic(const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg) const
-// {
-//   run_test_->printHello();
-// }
+
 
 void RunTestNode::foo()
 {
