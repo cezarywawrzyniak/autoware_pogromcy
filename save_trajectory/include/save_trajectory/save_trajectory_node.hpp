@@ -19,8 +19,14 @@
 #include <iostream>
 #include <fstream>
 #include <rclcpp/rclcpp.hpp>
+#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "save_trajectory/save_trajectory.hpp"
+#include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
+#include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
+#include "nav_msgs/msg/odometry.hpp"
+
+
 
 namespace save_trajectory
 {
@@ -34,8 +40,13 @@ public:
 private:
   SaveTrajectoryPtr save_trajectory_{nullptr};
   void foo();
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr subscription_;
-  void get_topic(const geometry_msgs::msg::PoseStamped::SharedPtr msg) const;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr subscription_;
+  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>::SharedPtr subscription_vel_;
+  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>::SharedPtr subscription_steer_;
+  rclcpp::Publisher<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr pub_ack;
+  void get_topic(const nav_msgs::msg::Odometry::SharedPtr msg) const;
+  void get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg) const;
+  void get_steer_topic(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg) const;
 };
 }  // namespace save_trajectory
 

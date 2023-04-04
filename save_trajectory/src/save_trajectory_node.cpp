@@ -24,13 +24,32 @@ SaveTrajectoryNode::SaveTrajectoryNode(const rclcpp::NodeOptions & options)
   const int64_t param_name = this->declare_parameter("param_name", 456);
   save_trajectory_->setParameters(param_name);
   this->foo();
-  subscription_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("/ground_truth/pose", 10, std::bind(&SaveTrajectoryNode::get_topic, this, std::placeholders::_1));
-  
+  pub_ack = this->create_publisher<autoware_auto_planning_msgs::msg::Trajectory>("/trajectory", 1);
+
+  subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("/localization/odometry", 10, std::bind(&SaveTrajectoryNode::get_topic, this, std::placeholders::_1));
+  subscription_vel_ = this->create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>("/vehicle/status/velocity_status", 10, std::bind(&SaveTrajectoryNode::get_vel_topic, this, std::placeholders::_1));
+  subscription_steer_ = this->create_subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>("/vehicle/status/steering_status", 10, std::bind(&SaveTrajectoryNode::get_steer_topic, this, std::placeholders::_1));
 }
 
-void SaveTrajectoryNode::get_topic(const geometry_msgs::msg::PoseStamped::SharedPtr msg) const
+
+
+void SaveTrajectoryNode::get_topic(const nav_msgs::msg::Odometry::SharedPtr msg) const
 {
-  std::cout << msg->pose.position.x << ", "<< msg->pose.position.x << std::endl;
+  std::cout <<"POZYCJA: " <<msg->pose.pose.position.x << std::endl;
+}
+
+void SaveTrajectoryNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg) const
+{
+  std::cout <<"VELOCITY: " << msg->longitudinal_velocity << std::endl;
+  
+  // msg->lateral_velocity_mps
+  // msg->heading_rate
+}
+
+void SaveTrajectoryNode::get_steer_topic(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg) const
+{
+  std::cout <<"STEEERING: " << msg->steering_tire_angle << std::endl;
+  
 }
 
 void SaveTrajectoryNode::foo()
