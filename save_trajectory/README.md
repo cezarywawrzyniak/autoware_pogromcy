@@ -21,6 +21,10 @@ colcon build --symlink-install --packages-select save_trajectory
 ```bash
 ros2 launch save_trajectory save_trajectory.launch.py
 ```
+Record bag
+```bash
+ros2 bag record /trajectory
+```
 
 ## API
 <!-- Required -->
@@ -31,7 +35,7 @@ ros2 launch save_trajectory save_trajectory.launch.py
 
 | Name         | Type                  | Description  |
 | ------------ | --------------------- | ------------ |
-| `/ground_truth/pose` | geometry_msgs::msg::PoseStamped | Sample desc. |
+| `/localization/odometry` | nav_msgs::msg::Odometry | Sample desc. |
 
 ### Output
 

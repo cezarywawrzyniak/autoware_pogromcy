@@ -25,7 +25,8 @@
 #include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
 #include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-
+#include <chrono>
+#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 
 
 namespace save_trajectory
@@ -47,6 +48,9 @@ private:
   void get_topic(const nav_msgs::msg::Odometry::SharedPtr msg) const;
   void get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg) const;
   void get_steer_topic(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg) const;
+  rclcpp::TimerBase::SharedPtr timer_;
+  void timer_callback();
+  
 };
 }  // namespace save_trajectory
 
