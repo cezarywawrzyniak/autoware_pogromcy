@@ -15,9 +15,9 @@
 #include "gtest/gtest.h"
 #include "gamepad_support/gamepad_support.hpp"
 
-TEST(TestGamepadSupport, TestHello) {
-  std::unique_ptr<gamepad_support::GamepadSupport> gamepad_support_ =
-    std::make_unique<gamepad_support::GamepadSupport>();
-  auto result = gamepad_support_->printHello();
-  EXPECT_EQ(result, 123);
-}
+// TEST(TestGamepadSupport, TestHello) {
+//   std::unique_ptr<gamepad_support::GamepadSupport> gamepad_support_ =
+//     std::make_unique<gamepad_support::GamepadSupport>();
+//   auto result = gamepad_support_->joy_callback();
+//   EXPECT_EQ(result, 123);
+// }

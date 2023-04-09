@@ -19,6 +19,10 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "gamepad_support/gamepad_support.hpp"
+#include "autoware_auto_control_msgs/msg/ackermann_control_command.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
+#include "sensor_msgs/msg/joy.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 
 namespace gamepad_support
 {
@@ -31,7 +35,38 @@ public:
 
 private:
   GamepadSupportPtr gamepad_support_{nullptr};
-  void foo();
+
+  double steer_ratio_ = 0.5;
+  double accel_ratio_ = 3.0;
+
+  double steering_angle_velocity_ = 0.1;
+  double velocity_gain_ = 3.0;
+  double max_forward_velocity_ = 20.0;
+
+  double brake_ratio_ = 5.0;
+  double backward_accel_ratio_ = 1.0;
+  double max_backward_velocity_ = 3.0;
+    // update_rate: 10.0
+    // accel_ratio: 3.0
+    // brake_ratio: 5.0
+    // steer_ratio: 0.5
+    // steering_angle_velocity: 0.1
+    // accel_sensitivity: 1.0
+    // brake_sensitivity: 1.0
+    // control_command:
+    //   velocity_gain: 3.0
+    //   max_forward_velocity: 20.0
+    //   max_backward_velocity: 3.0
+    //   backward_accel_ratio: 1.0
+
+  geometry_msgs::msg::TwistStamped::ConstSharedPtr twist_;
+  autoware_auto_control_msgs::msg::AckermannControlCommand prev_control_command_;
+
+  rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
+  rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr steer_pub;
+  void joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg);
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::ConstSharedPtr odom_sub;
+  void odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
 };
 }  // namespace gamepad_support
 

@@ -28,7 +28,6 @@ class GAMEPAD_SUPPORT_PUBLIC GamepadSupport
 public:
   GamepadSupport();
   void setParameters(int64_t param_name);
-  int64_t printHello() const;
 
 private:
   int64_t param_name_{123};

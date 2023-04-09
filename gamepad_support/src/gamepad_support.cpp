@@ -28,10 +28,5 @@ void GamepadSupport::setParameters(int64_t param_name)
   param_name_ = param_name;
 }
 
-int64_t GamepadSupport::printHello() const
-{
-  std::cout << "Hello World, " << param_name_ << std::endl;
-  return param_name_;
-}
 
 }  // namespace gamepad_support
