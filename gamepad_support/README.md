@@ -26,7 +26,7 @@ Then this package can be launched by:
 
 | Name                           | Type                                                    | Description       |
 | ------------------------------ | ------------------------------------------------------- | ----------------- |
-| `/control/command/control_cmd` | utoware_auto_control_msgs::msg::AckermannControlCommand | Steering commands |
+| `/control/command/control_cmd` | autoware_auto_control_msgs::msg::AckermannControlCommand | Steering commands |
 
 ### Services
 
