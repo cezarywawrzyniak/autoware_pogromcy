@@ -1,27 +1,32 @@
 # gamepad_support
 
 ## Purpose
-<!-- Required -->
-<!-- Things to consider:
-    - Why did we implement this feature? -->
 
+This node's puropse is to use controller (Dualshock4) to steer the car inside the simulation.
 
 ## API
-<!-- Required -->
-<!-- Things to consider:
-    - How do you use the package / API? -->
+
+First ros2 joy node needs to be launched by:
+
+    ros2 run joy joy_node
+
+(it makes it possible to read controller inputs).
+Then this package can be launched by:
+
+    ros2 launch gamepad_support gamepad_support.launch.py
 
 ### Input
 
-| Name         | Type                  | Description  |
-| ------------ | --------------------- | ------------ |
-| `topic_name` | std_msgs::msg::String | Sample desc. |
+| Name                     | Type                    | Description     |
+| ------------------------ | ----------------------- | --------------- |
+| `/localization/odometry` | nav_msgs::msg::Odometry | Car's odometry  |
+| `/joy`                   | sensor_msgs::msg::Joy   | Joystick inputs |
 
 ### Output
 
-| Name         | Type                  | Description  |
-| ------------ | --------------------- | ------------ |
-| `topic_name` | std_msgs::msg::String | Sample desc. |
+| Name                           | Type                                                    | Description       |
+| ------------------------------ | ------------------------------------------------------- | ----------------- |
+| `/control/command/control_cmd` | utoware_auto_control_msgs::msg::AckermannControlCommand | Steering commands |
 
 ### Services
 
@@ -35,6 +40,6 @@
 | ----------------------- | ---- | ------------ |
 | `param_name`            | int  | Sample desc. |
 
-
 ## References / External links
 <!-- Optional -->
+
