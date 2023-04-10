@@ -27,6 +27,7 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include <chrono>
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include <rosbag2_cpp/writer.hpp>
 
 
 namespace save_trajectory
@@ -50,6 +51,7 @@ private:
   void get_steer_topic(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg) const;
   rclcpp::TimerBase::SharedPtr timer_;
   void timer_callback();
+  std::unique_ptr<rosbag2_cpp::Writer> writer_;
   
 };
 }  // namespace save_trajectory
