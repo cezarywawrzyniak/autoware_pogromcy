@@ -27,7 +27,7 @@ float latera = 0.0;
 float heading = 0.0;
 float steer = 0.0;
 geometry_msgs::msg::Pose pose1;
-autoware_auto_planning_msgs::msg::Trajectory traj{};  
+autoware_auto_planning_msgs::msg::Trajectory traj;  
 
 namespace save_trajectory
 {
@@ -44,23 +44,24 @@ SaveTrajectoryNode::SaveTrajectoryNode(const rclcpp::NodeOptions & options)
   subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("/localization/odometry", 10, std::bind(&SaveTrajectoryNode::get_topic, this, std::placeholders::_1));
   subscription_vel_ = this->create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>("/vehicle/status/velocity_status", 10, std::bind(&SaveTrajectoryNode::get_vel_topic, this, std::placeholders::_1));
   subscription_steer_ = this->create_subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>("/vehicle/status/steering_status", 10, std::bind(&SaveTrajectoryNode::get_steer_topic, this, std::placeholders::_1));
-  timer_ = this->create_wall_timer(50ms, std::bind(&SaveTrajectoryNode::timer_callback, this));
+  timer_ = this->create_wall_timer(100ms, std::bind(&SaveTrajectoryNode::timer_callback, this));
 
-  writer_ = std::make_unique<rosbag2_cpp::Writer>();
-  writer_->open("my_bag");
+  // writer_ = std::make_unique<rosbag2_cpp::Writer>();
+  // writer_->open("my_bag");
 }
 
 
 
 void SaveTrajectoryNode::get_topic(const nav_msgs::msg::Odometry::SharedPtr msg) const
 {
-  // std::cout <<"POZYCJA: " <<msg->pose.pose.position.x << std::endl;
-  pose1.position.x = msg->pose.pose.position.x;
-  pose1.position.y = msg->pose.pose.position.y;
-  pose1.orientation.x = msg->pose.pose.orientation.x;
-  pose1.orientation.y = msg->pose.pose.orientation.y;
-  pose1.orientation.z = msg->pose.pose.orientation.z;
-  pose1.orientation.w = msg->pose.pose.orientation.w;
+  // std::cout <<"POZYCJA: " <<msg->pose.pose.position.y << std::endl;
+  // pose1.position.x = msg->pose.pose.position.x;
+  // pose1.position.y = msg->pose.pose.position.y;
+  // pose1.orientation.x = msg->pose.pose.orientation.x;
+  // pose1.orientation.y = msg->pose.pose.orientation.y;
+  // pose1.orientation.z = msg->pose.pose.orientation.z;
+  // pose1.orientation.w = msg->pose.pose.orientation.w;
+  pose1 = msg->pose.pose;
   // y = msg->pose.pose.position.y;
   // msg->pose.pose.position.z
 }
@@ -86,6 +87,7 @@ void SaveTrajectoryNode::foo()
 
 void SaveTrajectoryNode::timer_callback()
 {
+  std::cout <<"POZYCJA: " << pose1.position.y << std::endl;
   autoware_auto_planning_msgs::msg::TrajectoryPoint point;
   point.pose = pose1;
   point.longitudinal_velocity_mps = longi;
