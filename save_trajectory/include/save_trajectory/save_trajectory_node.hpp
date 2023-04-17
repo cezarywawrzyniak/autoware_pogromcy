@@ -27,6 +27,7 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include <chrono>
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include "builtin_interfaces/msg/duration.hpp"
 #include <rosbag2_cpp/writer.hpp>
 
 
