@@ -3,6 +3,8 @@ project(save_trajectory)
 
 # require that dependencies from package.xml be available
 find_package(ament_cmake_auto REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
+
 ament_auto_find_build_dependencies(REQUIRED
   ${${PROJECT_NAME}_BUILD_DEPENDS}
   ${${PROJECT_NAME}_BUILDTOOL_DEPENDS}

@@ -52,7 +52,7 @@ private:
   void get_steer_topic(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg) const;
   rclcpp::TimerBase::SharedPtr timer_;
   void timer_callback();
-  // std::unique_ptr<rosbag2_cpp::Writer> writer_;
+  std::unique_ptr<rosbag2_cpp::Writer> writer_;
   
 };
 }  // namespace save_trajectory

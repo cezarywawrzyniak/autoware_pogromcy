@@ -19,7 +19,8 @@
 #include <sstream>
 
 using namespace std::chrono_literals;
-
+auto start_time = std::chrono::high_resolution_clock::now();
+bool first_run = true;
 float x = 0.0;
 float y = 0.0;
 float longi = 0.0;  
@@ -44,26 +45,17 @@ SaveTrajectoryNode::SaveTrajectoryNode(const rclcpp::NodeOptions & options)
   subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("/localization/odometry", 10, std::bind(&SaveTrajectoryNode::get_topic, this, std::placeholders::_1));
   subscription_vel_ = this->create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>("/vehicle/status/velocity_status", 10, std::bind(&SaveTrajectoryNode::get_vel_topic, this, std::placeholders::_1));
   subscription_steer_ = this->create_subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>("/vehicle/status/steering_status", 10, std::bind(&SaveTrajectoryNode::get_steer_topic, this, std::placeholders::_1));
-  timer_ = this->create_wall_timer(100ms, std::bind(&SaveTrajectoryNode::timer_callback, this));
+  timer_ = this->create_wall_timer(500ms, std::bind(&SaveTrajectoryNode::timer_callback, this));
 
-  // writer_ = std::make_unique<rosbag2_cpp::Writer>();
-  // writer_->open("my_bag");
+  writer_ = std::make_unique<rosbag2_cpp::Writer>();
+  writer_->open("my_bag");
 }
 
 
 
 void SaveTrajectoryNode::get_topic(const nav_msgs::msg::Odometry::SharedPtr msg) const
 {
-  // std::cout <<"POZYCJA: " <<msg->pose.pose.position.y << std::endl;
-  // pose1.position.x = msg->pose.pose.position.x;
-  // pose1.position.y = msg->pose.pose.position.y;
-  // pose1.orientation.x = msg->pose.pose.orientation.x;
-  // pose1.orientation.y = msg->pose.pose.orientation.y;
-  // pose1.orientation.z = msg->pose.pose.orientation.z;
-  // pose1.orientation.w = msg->pose.pose.orientation.w;
   pose1 = msg->pose.pose;
-  // y = msg->pose.pose.position.y;
-  // msg->pose.pose.position.z
 }
 
 void SaveTrajectoryNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg) const
@@ -87,15 +79,44 @@ void SaveTrajectoryNode::foo()
 
 void SaveTrajectoryNode::timer_callback()
 {
-  std::cout <<"POZYCJA: " << pose1.position.y << std::endl;
-  autoware_auto_planning_msgs::msg::TrajectoryPoint point;
-  point.pose = pose1;
-  point.longitudinal_velocity_mps = longi;
-  point.lateral_velocity_mps = latera;
-  point.heading_rate_rps = heading;
-  point.front_wheel_angle_rad = steer;
-  traj.points.push_back(point);
-  pub_ack->publish(traj);
+  if(!first_run)
+  {
+    auto current_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time);
+    std::cout <<"not first_run: " << pose1.position.y << std::endl;
+    autoware_auto_planning_msgs::msg::TrajectoryPoint point;
+    point.pose = pose1;
+    point.longitudinal_velocity_mps = longi;
+    point.lateral_velocity_mps = latera;
+    point.heading_rate_rps = heading;
+    point.front_wheel_angle_rad = steer;
+    point.time_from_start.sec = static_cast<int32_t>(duration.count() / 1e9);
+    point.time_from_start.nanosec = static_cast<uint32_t>(duration.count() % static_cast<long>(1e9));
+    traj.points.push_back(point);
+    pub_ack->publish(traj);
+  }
+  else
+  {
+    start_time = std::chrono::high_resolution_clock::now();
+    first_run = false;
+    std::cout <<"START: " << pose1.position.y << std::endl;
+    auto current_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time);
+    autoware_auto_planning_msgs::msg::TrajectoryPoint point;
+    point.pose = pose1;
+    point.longitudinal_velocity_mps = longi;
+    point.lateral_velocity_mps = latera;
+    point.heading_rate_rps = heading;
+    point.front_wheel_angle_rad = steer;
+    point.time_from_start.sec = static_cast<int32_t>(duration.count() / 1e9);
+    point.time_from_start.nanosec = static_cast<uint32_t>(duration.count() % static_cast<long>(1e9));
+    traj.points.push_back(point);
+    pub_ack->publish(traj);
+
+  }
+  rclcpp::Time time_stamp = this->now();
+  writer_->write(traj,"/trajectory", time_stamp);
+  
 
 }
 
