@@ -29,8 +29,13 @@
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 #include "builtin_interfaces/msg/duration.hpp"
 #include <rosbag2_cpp/writer.hpp>
+#include "tf2/exceptions.h"
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/buffer.h"
+#include <nlohmann/json.hpp>
 
 
+using json = nlohmann::json;
 namespace save_trajectory
 {
 using SaveTrajectoryPtr = std::unique_ptr<save_trajectory::SaveTrajectory>;
@@ -53,7 +58,8 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
   void timer_callback();
   std::unique_ptr<rosbag2_cpp::Writer> writer_;
-  
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 };
 }  // namespace save_trajectory
 

@@ -19,6 +19,33 @@ colcon build --symlink-install --packages-select save_trajectory
     - Launching package. 
     - Exposed API (example service/action call. -->
 
+
+Change path in file save_trajectory_node.cpp: file.open("**/home/czarek/autoware/trajectory.txt**"). Before run script, make sure that you have frames: map and base link. You can check it by using command below:
+```bash
+ros2 run tf2_tools view_frames
+```
+It will make a .pdf file with all frames. Remember to run simulator before.
+
+### **Record trajectory!**
+
+Run in terminal your simulator,
+```bash
+./AWSIM_v1.1.F1TENTH_keyboard_control/AWSIM_F1TENTH.x86_64 
+```
+then in another terminal run 
+```bash
+ros2 launch f1tenth_launch f1tenth.launch.py map_path:=autoware_map/imola
+```
+Then in another terminal run:
+
+```bash
+ros2 launch save_trajectory save_trajectory.launch.py
+```
+Use ctr+s when you would like to end recording. Now you can use your save file with trajectory.
+
+
+# OLD_VERSION START
+
 ### **Record trajectory!**
 
 Run in terminal **F1Tenth_v0.?.x86_64**, then in another terminal run 
@@ -49,6 +76,8 @@ Check if you car is moving.
 
 If you want to change some parameters of your controller, fell free to make changes in /external/trajectory_follower_node_2/src/controller_node.cpp.
 
+# OLD_VERSION END
+
 ## API
 <!-- Required -->
 <!-- Things to consider:
@@ -58,7 +87,7 @@ If you want to change some parameters of your controller, fell free to make chan
 
 | Name         | Type                  | Description  |
 | ------------ | --------------------- | ------------ |
-| `/localization/odometry` | nav_msgs::msg::Odometry | Sample desc. |
+| `/tf` | nav_msgs::msg::Odometry | Transform from map to base_link. |
 | `/vehicle/status/velocity_status` | autoware_auto_vehicle_msgs::msg::VelocityReport | Sample desc. |
 | `/vehicle/status/steering_status` | autoware_auto_vehicle_msgs::msg::SteeringReport | Sample desc. |
 
@@ -66,7 +95,7 @@ If you want to change some parameters of your controller, fell free to make chan
 
 | Name         | Type                  | Description  |
 | ------------ | --------------------- | ------------ |
-| `/trajectory` | autoware_auto_planning_msgs::msg::Trajectory | Sample desc. |
+| Sample | Sample | Sample desc. |
 
 
 

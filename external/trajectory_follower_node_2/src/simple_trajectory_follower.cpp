@@ -102,7 +102,7 @@ double SimpleTrajectoryFollower::calcAccCmd()
 
   // P feedback
   constexpr auto kp = 0.5;
-  constexpr auto acc_lim = 2.0;
+  constexpr auto acc_lim = 4.0;
 
   const auto acc = std::clamp(-kp * vel_err, -acc_lim, acc_lim);
   RCLCPP_DEBUG(get_logger(), "vel_err = %f, acc = %f", vel_err, acc);

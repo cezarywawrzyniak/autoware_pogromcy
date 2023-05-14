@@ -17,6 +17,9 @@
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>rosbag2_cpp</depend>
   <depend>nav_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  
   
   
   
