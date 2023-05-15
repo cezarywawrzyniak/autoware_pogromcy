@@ -41,7 +41,9 @@ Then in another terminal run:
 ```bash
 ros2 launch save_trajectory save_trajectory.launch.py
 ```
-Use ctr+s when you would like to end recording. Now you can use your save file with trajectory.
+Use ctr+s when you would like to end recording. Congrats, you saved your trajectory in trajectory.txt. If you would like to use .json file move you trajectory.txt to script. Then you have to run script that is placed **script/txt_to_json.py**.
+
+Now you can use your save file with trajectory. 
 
 
 # OLD_VERSION START
