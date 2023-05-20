@@ -33,6 +33,9 @@
   <depend>rclcpp_components</depend>
   <depend>trajectory_follower_base</depend>
   <depend>vehicle_info_util</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
 
   <exec_depend>ros2launch</exec_depend>
 

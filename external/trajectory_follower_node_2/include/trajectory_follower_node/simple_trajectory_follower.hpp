@@ -21,8 +21,12 @@
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include "tf2/exceptions.h"
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/buffer.h"
 
 #include <memory>
 
@@ -46,15 +50,19 @@ private:
   rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
   rclcpp::Publisher<AckermannControlCommand>::SharedPtr pub_cmd_;
   rclcpp::TimerBase::SharedPtr timer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
   Trajectory::SharedPtr trajectory_;
   Odometry::SharedPtr odometry_;
   TrajectoryPoint closest_traj_point_;
+  Pose::SharedPtr real_pose;
   bool use_external_target_vel_;
   double external_target_vel_;
   double lateral_deviation_;
 
   void onTimer();
+  void getTransform();
   bool checkData();
   void updateClosest();
   double calcSteerCmd();

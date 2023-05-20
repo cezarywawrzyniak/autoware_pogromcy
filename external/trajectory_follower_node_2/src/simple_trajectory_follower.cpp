@@ -43,6 +43,9 @@ SimpleTrajectoryFollower::SimpleTrajectoryFollower(const rclcpp::NodeOptions & o
   using namespace std::literals::chrono_literals;
   timer_ = rclcpp::create_timer(
     this, get_clock(), 30ms, std::bind(&SimpleTrajectoryFollower::onTimer, this));
+
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 }
 
 void SimpleTrajectoryFollower::onTimer()
@@ -53,6 +56,7 @@ void SimpleTrajectoryFollower::onTimer()
   }
 
   updateClosest();
+  // getTransform();
 
   AckermannControlCommand cmd;
   cmd.stamp = cmd.lateral.stamp = cmd.longitudinal.stamp = get_clock()->now();
@@ -67,6 +71,27 @@ void SimpleTrajectoryFollower::updateClosest()
 {
   const auto closest = findNearestIndex(trajectory_->points, odometry_->pose.pose.position);
   closest_traj_point_ = trajectory_->points.at(closest);
+}
+
+
+void SimpleTrajectoryFollower::getTransform()
+{
+  std::cout <<"Getting real transform" << std::endl;
+  real_pose -> position = odometry_->pose.pose.position;
+  real_pose -> orientation = odometry_ ->pose.pose.orientation;
+  std::cout << real_pose << std::endl;
+
+  geometry_msgs::msg::TransformStamped t;
+  // try {
+
+  //       } catch (const tf2::TransformException & ex) {
+  //         RCLCPP_INFO(
+  //           this->get_logger(), "Could not transform");
+  //         return;
+  //       }
+  t = tf_buffer_->lookupTransform("map", "base_link", tf2::TimePointZero);
+  std::cout << std::to_string(t.transform.translation.x) << " " << std::to_string(t.transform.translation.y) << std::endl;
+
 }
 
 double SimpleTrajectoryFollower::calcSteerCmd()
