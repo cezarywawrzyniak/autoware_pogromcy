@@ -73,7 +73,6 @@ void SimpleTrajectoryFollower::updateClosest()
   closest_traj_point_ = trajectory_->points.at(closest);
 }
 
-
 void SimpleTrajectoryFollower::getTransform()
 {
   std::cout <<"Getting real transform" << std::endl;
