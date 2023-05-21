@@ -91,7 +91,7 @@ public:
         // Find the nearest point on the path
         int nearest_index = findNearestPoint(current_pose);
 
-        std::cout << "Point number: " << nearest_index << std::endl;
+        // std::cout << "Point number: " << nearest_index << std::endl;
 
         // Calculate the target point using lookahead distance
         std::tuple<double, double> target_point = calculateTargetPoint(nearest_index);
@@ -139,8 +139,8 @@ private:
         
         double x_diff = std::get<0>(p2) - std::get<0>(p1);
         double y_diff = std::get<1>(p2) - std::get<1>(p1);
-        std::cout << "P1: " << std::get<0>(p1) << " , " << std::get<1>(p1) << std::endl;
-        std::cout << "P2: " << std::get<0>(p2) << " , " << std::get<1>(p2) << std::endl;
+        // std::cout << "P1: " << std::get<0>(p1) << " , " << std::get<1>(p1) << std::endl;
+        // std::cout << "P2: " << std::get<0>(p2) << " , " << std::get<1>(p2) << std::endl;
         return std::sqrt(x_diff * x_diff + y_diff * y_diff);;
     }
 };
