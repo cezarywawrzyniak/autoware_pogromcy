@@ -66,11 +66,11 @@ private:
   double cur_car_x, cur_car_y, cur_car_z;
   double dx, dy, distance;
 
-  double l_d = 2.5;
+  double l_d = 0.5;
   double min_ld = 0.1;
   double max_ld = 1.0;
   double K_dd = 1.0;
-  double wheel_base = 0.5;
+  double wheel_base = 0.4;
   
   double longitudinal_vel_;
   double lateral_vel_;

@@ -150,8 +150,8 @@ void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstShar
     std::cout << "Speed lat: " << lateral_vel_ << std::endl;
     std::cout << "Heading lat: " << heading_rate_ << std::endl;
     std::cout << "-------------------------------------------------------------------------------------" << std::endl;
-    double acc = 5.0;
-    if (longitudinal_vel_ > 10.0)
+    double acc = 0.5;
+    if (longitudinal_vel_ > 1.0)
     {
       acc = 0.0;
     }
