@@ -25,10 +25,19 @@ SteerTheCarNode::SteerTheCarNode(const rclcpp::NodeOptions & options)
   steer_the_car_->setParameters(param_name);
   steer_pub = this->create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>("/control/command/control_cmd", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
   odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("/localization/odometry", 1, std::bind(&SteerTheCarNode::odometry_callback, this, std::placeholders::_1));
+  vel_sub = this->create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>("/vehicle/status/velocity_status", 10, std::bind(&SteerTheCarNode::get_vel_topic, this, std::placeholders::_1));
   tf_buffer_ =
       std::make_unique<tf2_ros::Buffer>(this->get_clock());
   tf_listener_ =
       std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+}
+
+void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg)
+{
+  // std::cout <<"VELOCITY: " << msg->longitudinal_velocity << std::endl;
+  longitudinal_vel_ = msg->longitudinal_velocity;
+  lateral_vel_ = msg->lateral_velocity;
+  heading_rate_ = msg->heading_rate;
 }
 
 void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
@@ -84,6 +93,7 @@ void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstShar
         std::tie(cur_point_x, cur_point_y) = element;
 
         // Print the values
+        std::cout << "-------------------------------------------------------------------------------------" << std::endl;
         // std::cout << "Coordinate no: " << list_index << " X: " << cur_point_x << " Y: " << cur_point_y << std::endl;
     } 
     else 
@@ -91,38 +101,69 @@ void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstShar
         list_index = 0;
     }
 
+    // COMPUTE LOOK-AHEAD DISTANCE
+    // l_d = std::clamp(K_dd * longitudinal_vel_, min_ld, max_ld);
+
     // CALCULATE DISTANCE TO THE NEXT POINT
-    // dx = cur_car_x - cur_point_x;
-    // dy = cur_car_y - cur_point_y;
+    dx = cur_car_x - cur_point_x;
+    dy = cur_car_y - cur_point_y;
 
-    // distance = std::sqrt(dx * dx + dy * dy);
-
-    // std::cout << "Distance to point: " << distance << std::endl;
+    distance = std::sqrt(dx * dx + dy * dy);
+    std::cout << "CAR X: " << cur_car_x << "CAR Y: " << cur_car_y << std::endl;
+    std::cout << "Coordinate no: " << list_index << " X: " << cur_point_x << " Y: " << cur_point_y << std::endl;
+    std::cout << "DISTANCE X: " << dx << " " << "DISTANCE Y: " << dy << std::endl;
+    std::cout << "Distance to point: " << distance << std::endl;
     // std::cout << "Point number: " << list_index << std::endl;
 
-    // if (distance < 0.01)
+    // COMPUTE ANGLE TO NEXT POINT
+    double alpha = std::atan2(dy, dx);
+
+    // COMPUTE STEERING ANGLE
+    double steering_angle = std::atan((2*wheel_base*std::sin(alpha))/l_d);
+    double steering_angle_radian = -steering_angle * (M_PI / 180.0);
+    steering_angle = -steering_angle/M_PI;
+    // if (steering_angle > 0.5)
     // {
-    //   list_index += 1;
+    //   steering_angle = 0.5;
+    // }
+    // if (steering_angle < -0.5)
+    // {
+    //   steering_angle = -0.5;
     // }
 
-    PurePursuitController controller(5.0);
+    if (distance < l_d)
+    {
+      list_index += 1;
+    }
 
-    controller.setPath(coordinates_list);
+    // PurePursuitController controller(2.5);
 
-    std::tuple<double, double> current_pose = std::make_tuple(cur_car_x, cur_car_y);
+    // controller.setPath(coordinates_list);
 
-    double steering_angle = controller.calculateSteeringAngle(current_pose);
+    // std::tuple<double, double> current_pose = std::make_tuple(cur_car_x, cur_car_y);
 
+    // double steering_angle_controller = controller.calculateSteeringAngle(current_pose);
+    
     std::cout << "Steering Angle: " << steering_angle << std::endl;
+    std::cout << "Steering Angle Radian: " << steering_angle_radian << std::endl;
+    std::cout << "Speed long: " << longitudinal_vel_ << std::endl;
+    std::cout << "Speed lat: " << lateral_vel_ << std::endl;
+    std::cout << "Heading lat: " << heading_rate_ << std::endl;
+    std::cout << "-------------------------------------------------------------------------------------" << std::endl;
+    double acc = 5.0;
+    if (longitudinal_vel_ > 10.0)
+    {
+      acc = 0.0;
+    }
 
     autoware_auto_control_msgs::msg::AckermannControlCommand cmd;
     cmd.stamp = this->now();
     {
       cmd.lateral.steering_tire_angle = steering_angle;
-      cmd.lateral.steering_tire_rotation_rate = steering_angle_velocity_;
+      cmd.lateral.steering_tire_rotation_rate = steering_angle_velocity;
 
-      cmd.longitudinal.speed = 1.0;
-      cmd.longitudinal.acceleration = 0.1;
+      cmd.longitudinal.speed = 0.5;
+      cmd.longitudinal.acceleration = acc;
     }
   
   prev_control_command_ = cmd;

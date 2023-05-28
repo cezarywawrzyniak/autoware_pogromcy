@@ -22,14 +22,13 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <iostream>
-#include <vector>
 #include <cmath>
 #include <tuple>
+#include <algorithm>
 
 #include "steer_the_car/steer_the_car.hpp"
 #include "autoware_auto_control_msgs/msg/ackermann_control_command.hpp"
+#include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2/exceptions.h"
@@ -48,8 +47,13 @@ public:
 private:
   SteerTheCarPtr steer_the_car_{nullptr};
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr steer_pub;
+
   rclcpp::Subscription<nav_msgs::msg::Odometry>::ConstSharedPtr odom_sub;
   void odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+
+  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>::SharedPtr vel_sub;
+  void get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg);
+
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
@@ -62,12 +66,22 @@ private:
   double cur_car_x, cur_car_y, cur_car_z;
   double dx, dy, distance;
 
+  double l_d = 2.5;
+  double min_ld = 0.1;
+  double max_ld = 1.0;
+  double K_dd = 1.0;
+  double wheel_base = 0.5;
+  
+  double longitudinal_vel_;
+  double lateral_vel_;
+  double heading_rate_;
+
   bool first_loop = true;
 
   double steer_ratio_ = 0.5;
   double accel_ratio_ = 3.0;
 
-  double steering_angle_velocity_ = 0.1;
+  double steering_angle_velocity = 10.0;
   double velocity_gain_ = 3.0;
   double max_forward_velocity_ = 20.0;
 
