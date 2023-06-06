@@ -1,19 +1,17 @@
 # sub_test
 
 ## Installation
-<!-- Required -->
-<!-- Things to consider:
+
 ```
 colcon build --symlink-install --packages-select sub_test
 ```
 
 
 ## API
-<!-- Required -->
-<!-- Things to consider:
--Run F1TENTH simulator and Rviz2. 
+
+Run F1TENTH simulator and Rviz2. 
 ```
-    ros2 run sub_test sub_test.launch.py
+ros2 run sub_test sub_test.launch.py
 ``` 
 Add point by topic in Rviz2 to display.
 
@@ -28,10 +26,7 @@ Add point by topic in Rviz2 to display.
 
 | Name         | Type                  | Description  |
 | ------------ | --------------------- | ------------ |
-| `/planning/point` | geometry_msgs::msg::PoseStamped | Goal point |
+| `/planning/point` | geometry_msgs::msg::PoseStamped | Local goal point |
 
 
 
-
-## References / External links
-<!-- Optional -->
