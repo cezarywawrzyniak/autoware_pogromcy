@@ -34,6 +34,7 @@
 #include "tf2/exceptions.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
+#include "visualization_msgs/msg/marker.hpp"
 
 namespace steer_the_car
 {
@@ -46,6 +47,8 @@ public:
 
 private:
   SteerTheCarPtr steer_the_car_{nullptr};
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_marker;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_marker_list;
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr steer_pub;
 
   // rclcpp::Subscription<nav_msgs::msg::Odometry>::ConstSharedPtr odom_sub;
@@ -53,6 +56,11 @@ private:
 
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>::SharedPtr vel_sub;
   void get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg);
+
+  void pub_trajectory();
+  void pub_arrow();
+  visualization_msgs::msg::Marker marker2; //for line marker, whole trajectory
+  visualization_msgs::msg::Marker marker; //for arrow marker
 
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -88,6 +96,8 @@ private:
   double brake_ratio_ = 5.0;
   double backward_accel_ratio_ = 1.0;
   double max_backward_velocity_ = 3.0;
+
+  int idd = 0;
 
   autoware_auto_control_msgs::msg::AckermannControlCommand prev_control_command_;
 };

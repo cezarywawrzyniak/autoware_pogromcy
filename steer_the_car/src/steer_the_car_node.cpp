@@ -26,10 +26,50 @@ SteerTheCarNode::SteerTheCarNode(const rclcpp::NodeOptions & options)
   steer_pub = this->create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>("/control/command/control_cmd", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
   // odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("/localization/odometry", 1, std::bind(&SteerTheCarNode::odometry_callback, this, std::placeholders::_1));
   vel_sub = this->create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>("/vehicle/status/velocity_status", 10, std::bind(&SteerTheCarNode::get_vel_topic, this, std::placeholders::_1));
+  pub_marker = this->create_publisher<visualization_msgs::msg::Marker>("/marker", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+  pub_marker_list = this->create_publisher<visualization_msgs::msg::Marker>("/marker_list", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
   tf_buffer_ =
       std::make_unique<tf2_ros::Buffer>(this->get_clock());
   tf_listener_ =
       std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+}
+
+
+void SteerTheCarNode::pub_arrow()
+{
+  marker.header.frame_id = "map"; 
+  marker.id = idd;
+  idd = idd+1;
+  marker.type = visualization_msgs::msg::Marker::SPHERE;
+  marker.action = visualization_msgs::msg::Marker::ADD;
+  marker.lifetime = rclcpp::Duration(0.2, 0); 
+
+  marker.scale.x = 0.2;
+  marker.scale.y = 0.2;
+  marker.scale.z = 0.2;
+  marker.color.a = 1.0;
+  marker.color.r = 0.0;
+  marker.color.g = 1.0;
+  marker.color.b = 0.0;
+  pub_marker->publish(marker);
+}
+
+void SteerTheCarNode::pub_trajectory()
+{
+  marker2.header.frame_id = "map";
+  marker2.id = 0;
+  // marker2.type = 4;
+  marker2.type = 7;
+  marker2.action = 0;
+  marker2.pose = geometry_msgs::msg::Pose();
+  marker2.color.a = 1.0;
+  marker2.color.b = 1.0;
+  marker2.color.g = 1.0;
+  marker2.color.r = 1.0;
+  marker2.scale.x = 0.2;
+  marker2.scale.y = 0.2;
+  marker2.scale.z = 0.2;
+  pub_marker_list->publish(marker2);
 }
 
 void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg)
@@ -58,6 +98,11 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
 
         std::cout << "X: " << number1 << ", Y: " << number2 << std::endl;
         coordinates_list.push_back(std::make_tuple(number1, number2));
+
+        auto point = geometry_msgs::msg::Point();
+        point.x = number1;
+        point.y = number2;
+        marker2.points.push_back(point);
     }
 
     file.close();
@@ -79,6 +124,15 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
     cur_car_y = t.transform.translation.y;
     cur_car_z = t.transform.translation.z;
 
+    marker.pose.position.x = cur_point_x;
+    marker.pose.position.y = cur_point_y;
+    marker.pose.position.z = cur_car_z;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    pub_arrow();
+    pub_trajectory();
 
     // GETTING CURRENT POINT TO FOLLOW
     if (list_index < list_size) {
@@ -105,6 +159,7 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
     dy = cur_car_y - cur_point_y;
 
     distance = std::sqrt((dx * dx) + (dy * dy));
+    std::cout << marker2.points.size() << std::endl;
     std::cout << "CAR X: " << cur_car_x << "CAR Y: " << cur_car_y << std::endl;
     std::cout << "Coordinate no: " << list_index << " X: " << cur_point_x << " Y: " << cur_point_y << std::endl;
     std::cout << "DISTANCE X: " << dx << " " << "DISTANCE Y: " << dy << std::endl;
