@@ -48,8 +48,8 @@ private:
   SteerTheCarPtr steer_the_car_{nullptr};
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr steer_pub;
 
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::ConstSharedPtr odom_sub;
-  void odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+  // rclcpp::Subscription<nav_msgs::msg::Odometry>::ConstSharedPtr odom_sub;
+  // void odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
 
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>::SharedPtr vel_sub;
   void get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg);
@@ -67,10 +67,10 @@ private:
   double dx, dy, distance;
 
   double l_d = 0.5;
-  double min_ld = 0.1;
-  double max_ld = 1.0;
+  double min_ld = 1.0;
+  double max_ld = 2.0;
   double K_dd = 1.0;
-  double wheel_base = 0.4;
+  double wheel_base = 0.324;
   
   double longitudinal_vel_;
   double lateral_vel_;
@@ -110,9 +110,28 @@ public:
         // Calculate the target point using lookahead distance
         std::tuple<double, double> target_point = calculateTargetPoint(nearest_index);
 
-        // Calculate the steering angle
-        double steering_angle = atan2(std::get<1>(target_point) - std::get<1>(current_pose),
-                                      std::get<0>(target_point) - std::get<0>(current_pose));
+       // Calculate the angle from the current position to the target point
+        double target_angle = std::atan2(std::get<1>(target_point) - std::get<1>(current_pose),
+                                        std::get<0>(target_point) - std::get<0>(current_pose));
+
+        // Calculate the distance from the current position to the target point
+        double distance = std::sqrt(std::pow(std::get<0>(target_point) - std::get<0>(current_pose), 2) +
+                                    std::pow(std::get<1>(target_point) - std::get<1>(current_pose), 2));
+
+        double wheelbase_ = 0.4;
+        // Calculate the desired steering angle
+        double steering_angle = 2 * std::asin(2 * wheelbase_ * std::sin(target_angle) / distance);
+        steering_angle = steering_angle/M_PI;
+
+        // Limit the steering angle to the maximum steering angle capability
+        if (steering_angle > 0.5)
+        {
+          steering_angle = 0.5;
+        }
+        if (steering_angle < -0.5)
+        {
+          steering_angle = -0.5;
+        }
 
         return steering_angle;
     }

@@ -24,7 +24,7 @@ SteerTheCarNode::SteerTheCarNode(const rclcpp::NodeOptions & options)
   const int64_t param_name = this->declare_parameter("param_name", 456);
   steer_the_car_->setParameters(param_name);
   steer_pub = this->create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>("/control/command/control_cmd", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
-  odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("/localization/odometry", 1, std::bind(&SteerTheCarNode::odometry_callback, this, std::placeholders::_1));
+  // odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("/localization/odometry", 1, std::bind(&SteerTheCarNode::odometry_callback, this, std::placeholders::_1));
   vel_sub = this->create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>("/vehicle/status/velocity_status", 10, std::bind(&SteerTheCarNode::get_vel_topic, this, std::placeholders::_1));
   tf_buffer_ =
       std::make_unique<tf2_ros::Buffer>(this->get_clock());
@@ -38,11 +38,7 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
   longitudinal_vel_ = msg->longitudinal_velocity;
   lateral_vel_ = msg->lateral_velocity;
   heading_rate_ = msg->heading_rate;
-}
 
-void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
-{
-  std::cout << msg << std::endl;
   if (first_loop)
   {
     std::ifstream file(file_path);
@@ -108,28 +104,30 @@ void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstShar
     dx = cur_car_x - cur_point_x;
     dy = cur_car_y - cur_point_y;
 
-    distance = std::sqrt(dx * dx + dy * dy);
+    distance = std::sqrt((dx * dx) + (dy * dy));
     std::cout << "CAR X: " << cur_car_x << "CAR Y: " << cur_car_y << std::endl;
     std::cout << "Coordinate no: " << list_index << " X: " << cur_point_x << " Y: " << cur_point_y << std::endl;
     std::cout << "DISTANCE X: " << dx << " " << "DISTANCE Y: " << dy << std::endl;
     std::cout << "Distance to point: " << distance << std::endl;
-    // std::cout << "Point number: " << list_index << std::endl;
+    std::cout << "Point number: " << list_index << std::endl;
 
     // COMPUTE ANGLE TO NEXT POINT
     double alpha = std::atan2(dy, dx);
 
     // COMPUTE STEERING ANGLE
     double steering_angle = std::atan((2*wheel_base*std::sin(alpha))/l_d);
-    double steering_angle_radian = -steering_angle * (M_PI / 180.0);
-    steering_angle = -steering_angle/M_PI;
-    // if (steering_angle > 0.5)
-    // {
-    //   steering_angle = 0.5;
-    // }
-    // if (steering_angle < -0.5)
-    // {
-    //   steering_angle = -0.5;
-    // }
+    // double steering_angle_radian = -steering_angle * (M_PI / 180.0);
+    // steering_angle = -steering_angle/M_PI;
+    steering_angle = -steering_angle;
+
+    if (steering_angle > 0.5)
+    {
+      steering_angle = 0.5;
+    }
+    if (steering_angle < -0.5)
+    {
+      steering_angle = -0.5;
+    }
 
     if (distance < l_d)
     {
@@ -145,7 +143,8 @@ void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstShar
     // double steering_angle_controller = controller.calculateSteeringAngle(current_pose);
     
     std::cout << "Steering Angle: " << steering_angle << std::endl;
-    std::cout << "Steering Angle Radian: " << steering_angle_radian << std::endl;
+    // std::cout << "Steering Angle Radian: " << steering_angle_radian << std::endl;
+    // std::cout << "Steering Angle Controller: " << steering_angle_controller << std::endl;
     std::cout << "Speed long: " << longitudinal_vel_ << std::endl;
     std::cout << "Speed lat: " << lateral_vel_ << std::endl;
     std::cout << "Heading lat: " << heading_rate_ << std::endl;
@@ -171,6 +170,11 @@ void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstShar
 
   }
 }
+
+// void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
+// {
+//   std::cout << msg << std::endl;
+// }
 
 
 }  // namespace steer_the_car

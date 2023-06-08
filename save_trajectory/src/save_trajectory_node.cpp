@@ -57,8 +57,8 @@ SaveTrajectoryNode::SaveTrajectoryNode(const rclcpp::NodeOptions & options)
       std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   file.open("/home/czarek/autoware/trajectory.txt");
   
-  writer_ = std::make_unique<rosbag2_cpp::Writer>();
-  writer_->open("my_bag");
+  // writer_ = std::make_unique<rosbag2_cpp::Writer>();
+  // writer_->open("my_bag");
 }
 
 
@@ -117,43 +117,43 @@ void SaveTrajectoryNode::timer_callback()
 
 
 
-  if(!first_run)
-  {
-    auto current_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time);
-    std::cout <<"not first_run: " << pose1.position.y << std::endl;
-    autoware_auto_planning_msgs::msg::TrajectoryPoint point;
-    point.pose = pose1;
-    point.longitudinal_velocity_mps = longi;
-    point.lateral_velocity_mps = latera;
-    point.heading_rate_rps = heading;
-    point.front_wheel_angle_rad = steer;
-    point.time_from_start.sec = static_cast<int32_t>(duration.count() / 1e9);
-    point.time_from_start.nanosec = static_cast<uint32_t>(duration.count() % static_cast<long>(1e9));
-    traj.points.push_back(point);
-    pub_ack->publish(traj);
-  }
-  else
-  {
-    start_time = std::chrono::high_resolution_clock::now();
-    first_run = false;
-    std::cout <<"START: " << pose1.position.y << std::endl;
-    auto current_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time);
-    autoware_auto_planning_msgs::msg::TrajectoryPoint point;
-    point.pose = pose1;
-    point.longitudinal_velocity_mps = longi;
-    point.lateral_velocity_mps = latera;
-    point.heading_rate_rps = heading;
-    point.front_wheel_angle_rad = steer;
-    point.time_from_start.sec = static_cast<int32_t>(duration.count() / 1e9);
-    point.time_from_start.nanosec = static_cast<uint32_t>(duration.count() % static_cast<long>(1e9));
-    traj.points.push_back(point);
-    pub_ack->publish(traj);
+  // if(!first_run)
+  // {
+  //   auto current_time = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time);
+  //   std::cout <<"not first_run: " << pose1.position.y << std::endl;
+  //   autoware_auto_planning_msgs::msg::TrajectoryPoint point;
+  //   point.pose = pose1;
+  //   point.longitudinal_velocity_mps = longi;
+  //   point.lateral_velocity_mps = latera;
+  //   point.heading_rate_rps = heading;
+  //   point.front_wheel_angle_rad = steer;
+  //   point.time_from_start.sec = static_cast<int32_t>(duration.count() / 1e9);
+  //   point.time_from_start.nanosec = static_cast<uint32_t>(duration.count() % static_cast<long>(1e9));
+  //   traj.points.push_back(point);
+  //   pub_ack->publish(traj);
+  // }
+  // else
+  // {
+  //   start_time = std::chrono::high_resolution_clock::now();
+  //   first_run = false;
+  //   std::cout <<"START: " << pose1.position.y << std::endl;
+  //   auto current_time = std::chrono::high_resolution_clock::now();
+  //   auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time);
+  //   autoware_auto_planning_msgs::msg::TrajectoryPoint point;
+  //   point.pose = pose1;
+  //   point.longitudinal_velocity_mps = longi;
+  //   point.lateral_velocity_mps = latera;
+  //   point.heading_rate_rps = heading;
+  //   point.front_wheel_angle_rad = steer;
+  //   point.time_from_start.sec = static_cast<int32_t>(duration.count() / 1e9);
+  //   point.time_from_start.nanosec = static_cast<uint32_t>(duration.count() % static_cast<long>(1e9));
+  //   traj.points.push_back(point);
+  //   pub_ack->publish(traj);
 
-  }
-  rclcpp::Time time_stamp = this->now();
-  writer_->write(traj,"/trajectory", time_stamp);
+  // }
+  // rclcpp::Time time_stamp = this->now();
+  // writer_->write(traj,"/trajectory", time_stamp);
   
 
 }
