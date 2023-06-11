@@ -26,6 +26,11 @@
 #include <tuple>
 #include <algorithm>
 
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <tf2_ros/buffer.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
 #include "steer_the_car/steer_the_car.hpp"
 #include "autoware_auto_control_msgs/msg/ackermann_control_command.hpp"
 #include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
@@ -74,7 +79,7 @@ private:
   double cur_car_x, cur_car_y, cur_car_z;
   double dx, dy, distance;
 
-  double l_d = 0.5;
+  double l_d = 2.0;
   double min_ld = 1.0;
   double max_ld = 2.0;
   double K_dd = 1.0;

@@ -38,11 +38,12 @@ SteerTheCarNode::SteerTheCarNode(const rclcpp::NodeOptions & options)
 void SteerTheCarNode::pub_arrow()
 {
   marker.header.frame_id = "map"; 
-  marker.id = idd;
+  marker.id = 0;
   idd = idd+1;
   marker.type = visualization_msgs::msg::Marker::SPHERE;
-  marker.action = visualization_msgs::msg::Marker::ADD;
-  marker.lifetime = rclcpp::Duration(0.2, 0); 
+  // marker.action = visualization_msgs::msg::Marker::ADD;
+  marker.action = 0;
+  marker.lifetime = rclcpp::Duration(0, 1e9); 
 
   marker.scale.x = 0.2;
   marker.scale.y = 0.2;
@@ -151,6 +152,19 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
         list_index = 0;
     }
 
+    tf2::Quaternion quaternion;
+    tf2::fromMsg(t.transform.rotation, quaternion);
+
+    // Convert the quaternion to euler angles (roll, pitch, yaw)
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(quaternion).getRPY(roll, pitch, yaw);
+
+    // Convert the yaw from radians to degrees
+    double yaw_degrees = yaw * 180.0 / M_PI;
+
+    // Print the yaw angle
+    std::cout << "YAW DEGREES: " << yaw_degrees << std::endl;
+
     // COMPUTE LOOK-AHEAD DISTANCE
     // l_d = std::clamp(K_dd * longitudinal_vel_, min_ld, max_ld);
 
@@ -170,7 +184,7 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
     double alpha = std::atan2(dy, dx);
 
     // COMPUTE STEERING ANGLE
-    double steering_angle = std::atan((2*wheel_base*std::sin(alpha))/l_d);
+    double steering_angle = std::atan((2*wheel_base*std::sin(alpha - yaw))/l_d);
     // double steering_angle_radian = -steering_angle * (M_PI / 180.0);
     // steering_angle = -steering_angle/M_PI;
     steering_angle = -steering_angle;
@@ -204,8 +218,8 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
     std::cout << "Speed lat: " << lateral_vel_ << std::endl;
     std::cout << "Heading lat: " << heading_rate_ << std::endl;
     std::cout << "-------------------------------------------------------------------------------------" << std::endl;
-    double acc = 0.5;
-    if (longitudinal_vel_ > 1.0)
+    double acc = 1.0;
+    if (longitudinal_vel_ > 3.0)
     {
       acc = 0.0;
     }
