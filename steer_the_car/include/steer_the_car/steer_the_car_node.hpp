@@ -56,9 +56,6 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_marker_list;
   rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr steer_pub;
 
-  // rclcpp::Subscription<nav_msgs::msg::Odometry>::ConstSharedPtr odom_sub;
-  // void odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
-
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>::SharedPtr vel_sub;
   void get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg);
 
@@ -107,90 +104,5 @@ private:
   autoware_auto_control_msgs::msg::AckermannControlCommand prev_control_command_;
 };
 }  // namespace steer_the_car
-
-class PurePursuitController {
-public:
-    PurePursuitController(double lookahead_distance) : lookahead_distance_(lookahead_distance) {}
-
-    void setPath(const std::vector<std::tuple<double, double>>& path) {
-        path_ = path;
-    }
-
-    double calculateSteeringAngle(const std::tuple<double, double>& current_pose) {
-        // Find the nearest point on the path
-        int nearest_index = findNearestPoint(current_pose);
-
-        // std::cout << "Point number: " << nearest_index << std::endl;
-
-        // Calculate the target point using lookahead distance
-        std::tuple<double, double> target_point = calculateTargetPoint(nearest_index);
-
-       // Calculate the angle from the current position to the target point
-        double target_angle = std::atan2(std::get<1>(target_point) - std::get<1>(current_pose),
-                                        std::get<0>(target_point) - std::get<0>(current_pose));
-
-        // Calculate the distance from the current position to the target point
-        double distance = std::sqrt(std::pow(std::get<0>(target_point) - std::get<0>(current_pose), 2) +
-                                    std::pow(std::get<1>(target_point) - std::get<1>(current_pose), 2));
-
-        double wheelbase_ = 0.4;
-        // Calculate the desired steering angle
-        double steering_angle = 2 * std::asin(2 * wheelbase_ * std::sin(target_angle) / distance);
-        steering_angle = steering_angle/M_PI;
-
-        // Limit the steering angle to the maximum steering angle capability
-        if (steering_angle > 0.5)
-        {
-          steering_angle = 0.5;
-        }
-        if (steering_angle < -0.5)
-        {
-          steering_angle = -0.5;
-        }
-
-        return steering_angle;
-    }
-
-private:
-    std::vector<std::tuple<double, double>> path_;
-    double lookahead_distance_;
-
-    int findNearestPoint(const std::tuple<double, double>& current_pose) {
-      double min_distance = std::numeric_limits<double>::max();
-      std::vector<std::tuple<double, double>>::size_type nearest_index = 0;
-
-      for (std::vector<std::tuple<double, double>>::size_type i = 0; i < path_.size(); ++i) {
-          double distance = calculateDistance(current_pose, path_[i]);
-          // std::cout << "Distance to point: " << distance << std::endl;
-          if (distance < min_distance) {
-              min_distance = distance;
-              nearest_index = i;
-          }
-      }
-
-    return static_cast<int>(nearest_index);
-}
-
-    std::tuple<double, double> calculateTargetPoint(int nearest_index) {
-        double target_distance = 0.0;
-        int path_size = path_.size();
-
-        while (target_distance < lookahead_distance_ && (nearest_index + 1) < path_size) {
-            target_distance += calculateDistance(path_[nearest_index], path_[nearest_index + 1]);
-            nearest_index++;
-        }
-
-        return path_[nearest_index];
-    }
-
-    double calculateDistance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2) {
-        
-        double x_diff = std::get<0>(p2) - std::get<0>(p1);
-        double y_diff = std::get<1>(p2) - std::get<1>(p1);
-        // std::cout << "P1: " << std::get<0>(p1) << " , " << std::get<1>(p1) << std::endl;
-        // std::cout << "P2: " << std::get<0>(p2) << " , " << std::get<1>(p2) << std::endl;
-        return std::sqrt(x_diff * x_diff + y_diff * y_diff);;
-    }
-};
 
 #endif  // STEER_THE_CAR__STEER_THE_CAR_NODE_HPP_

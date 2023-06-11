@@ -24,7 +24,6 @@ SteerTheCarNode::SteerTheCarNode(const rclcpp::NodeOptions & options)
   const int64_t param_name = this->declare_parameter("param_name", 456);
   steer_the_car_->setParameters(param_name);
   steer_pub = this->create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>("/control/command/control_cmd", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
-  // odom_sub = this->create_subscription<nav_msgs::msg::Odometry>("/localization/odometry", 1, std::bind(&SteerTheCarNode::odometry_callback, this, std::placeholders::_1));
   vel_sub = this->create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>("/vehicle/status/velocity_status", 10, std::bind(&SteerTheCarNode::get_vel_topic, this, std::placeholders::_1));
   pub_marker = this->create_publisher<visualization_msgs::msg::Marker>("/marker", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
   pub_marker_list = this->create_publisher<visualization_msgs::msg::Marker>("/marker_list", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
@@ -41,7 +40,6 @@ void SteerTheCarNode::pub_arrow()
   marker.id = 0;
   idd = idd+1;
   marker.type = visualization_msgs::msg::Marker::SPHERE;
-  // marker.action = visualization_msgs::msg::Marker::ADD;
   marker.action = 0;
   marker.lifetime = rclcpp::Duration(0, 1e9); 
 
@@ -59,7 +57,6 @@ void SteerTheCarNode::pub_trajectory()
 {
   marker2.header.frame_id = "map";
   marker2.id = 0;
-  // marker2.type = 4;
   marker2.type = 7;
   marker2.action = 0;
   marker2.pose = geometry_msgs::msg::Pose();
@@ -202,14 +199,6 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
     {
       list_index += 1;
     }
-
-    // PurePursuitController controller(2.5);
-
-    // controller.setPath(coordinates_list);
-
-    // std::tuple<double, double> current_pose = std::make_tuple(cur_car_x, cur_car_y);
-
-    // double steering_angle_controller = controller.calculateSteeringAngle(current_pose);
     
     std::cout << "Steering Angle: " << steering_angle << std::endl;
     // std::cout << "Steering Angle Radian: " << steering_angle_radian << std::endl;
@@ -239,11 +228,6 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
 
   }
 }
-
-// void SteerTheCarNode::odometry_callback(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
-// {
-//   std::cout << msg << std::endl;
-// }
 
 
 }  // namespace steer_the_car
