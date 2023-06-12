@@ -36,6 +36,7 @@ void GamepadSupportNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg
   auto l2_trigger = std::max(0.0f, -msg->axes[4]);
   auto x_button = msg->buttons[0];
 
+  std::cout << "---------------------------------------------------------------------" << std::endl;
   std::cout << "JOYSTICK" << std::endl;
   std::cout << left_joystick << std::endl;
   std::cout << "R2" << std::endl;
