@@ -42,6 +42,7 @@ void GamepadSupportNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg
   std::cout << r2_trigger << std::endl;
   std::cout << "L2" << std::endl;
   std::cout << l2_trigger << std::endl;
+  std::cout << "Steering Angle: " << steer_ratio_ * left_joystick << std::endl;
   std::cout << "---------------------------------------------------------------------" << std::endl;
   
 
@@ -74,6 +75,7 @@ void GamepadSupportNode::joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg
 
  
   }
+  
 
   prev_control_command_ = cmd;
   steer_pub->publish(cmd);
