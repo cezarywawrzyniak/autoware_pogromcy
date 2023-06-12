@@ -1,6 +1,7 @@
 # save_trajectory
 <!-- Required -->
 <!-- Package description -->
+Package was created to subscribe topics, and create trajectory msg, and then record it to rosbag. Points are saving every 500ms.
 
 ## Installation
 <!-- Required -->
@@ -18,36 +19,20 @@ colcon build --symlink-install --packages-select save_trajectory
     - Launching package. 
     - Exposed API (example service/action call. -->
 
- You have to change in src/universe/autoware.universe/control/trajectory_follower_node/launch/simple_trajectory_follower.launch.xml section below:
-```
-<remap from="input/kinematics" to="/localization/odometry"/>
-<remap from="input/trajectory" to="/trajectory"/>
-<remap from="input/current_steering" to="/vehicle/status/steering_status"/>
-<remap from="output/control_cmd" to="/control/command/control_cmd"/>
-```
-Then in file src/universe/autoware.universe/control/trajectory_follower_node/src/controller_node.cpp change this section:
-```
-  sub_ref_path_ = create_subscription<autoware_auto_planning_msgs::msg::Trajectory>(
-    "/trajectory", rclcpp::QoS{1}, std::bind(&Controller::onTrajectory, this, _1));
-  sub_steering_ = create_subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>(
-    "/vehicle/status/steering_status", rclcpp::QoS{1}, std::bind(&Controller::onSteering, this, _1));
-  sub_odometry_ = create_subscription<nav_msgs::msg::Odometry>(
-    "/localization/odometry", rclcpp::QoS{1}, std::bind(&Controller::onOdometry, this, _1));
-  sub_accel_ = create_subscription<geometry_msgs::msg::AccelWithCovarianceStamped>(
-    "/input/current_accel", rclcpp::QoS{1}, std::bind(&Controller::onAccel, this, _1));
-  sub_operation_mode_ = create_subscription<OperationModeState>(
-    "/input/current_operation_mode", rclcpp::QoS{1},
-    [this](const OperationModeState::SharedPtr msg) { current_operation_mode_ptr_ = msg; });
-  control_cmd_pub_ = create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
-    "/control/command/control_cmd", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
-```
-then build it with command:
+
+Change path in file save_trajectory_node.cpp: file.open("**/home/czarek/autoware/trajectory.txt**"). Before run script, make sure that you have frames: map and base link. You can check it by using command below:
 ```bash
-colcon build --symlink-install --packages-select trajectory_follower_node
+ros2 run tf2_tools view_frames
 ```
+It will make a .pdf file with all frames. Remember to run simulator before.
 
+### **Record trajectory!**
 
-Run in terminal **F1Tenth_v0.5.x86_64**, then in another terminal run 
+Run in terminal your simulator,
+```bash
+./AWSIM_v1.1.F1TENTH_keyboard_control/AWSIM_F1TENTH.x86_64 
+```
+then in another terminal run 
 ```bash
 ros2 launch f1tenth_launch f1tenth.launch.py map_path:=autoware_map/imola
 ```
@@ -56,21 +41,44 @@ Then in another terminal run:
 ```bash
 ros2 launch save_trajectory save_trajectory.launch.py
 ```
-To record a bag run command:
+Use ctr+s when you would like to end recording. Congrats, you saved your trajectory in trajectory.txt. If you would like to use .json file move you trajectory.txt to script. Then you have to run script that is placed **script/txt_to_json.py**.
+
+Now you can use your save file with trajectory. 
+
+
+# OLD_VERSION START
+
+### **Record trajectory!**
+
+Run in terminal **F1Tenth_v0.?.x86_64**, then in another terminal run 
 ```bash
-ros2 bag record /trajectory
+ros2 launch f1tenth_launch f1tenth.launch.py map_path:=autoware_map/imola
 ```
+Then in another terminal run:
+
+```bash
+ros2 launch save_trajectory save_trajectory.launch.py
+```
+
 
 ### **If you record a bag, try it!**
 
-Run in terminal **F1Tenth_v0.5.x86_64**, then in another terminals run:
+Build package with controller:
+```bash
+colcon build --symlink-install --packages-select trajectory_follower_node_2
+```
+
+Run in terminal **F1Tenth_v0.?.x86_64**, then in another terminals run:
 ```bash
 ros2 launch f1tenth_launch f1tenth.launch.py map_path:=autoware_map/imola.
-ros2 launch trajectory_follower_node simple_trajectory_follower.launch.xml
-ros2 bag play <name_of_your_recorded_package>
+ros2 launch trajectory_follower_node_2 simple_trajectory_follower.launch.xml
+ros2 bag play my_bag/
 ```
 Check if you car is moving.
 
+If you want to change some parameters of your controller, fell free to make changes in /external/trajectory_follower_node_2/src/controller_node.cpp.
+
+# OLD_VERSION END
 
 ## API
 <!-- Required -->
@@ -81,25 +89,16 @@ Check if you car is moving.
 
 | Name         | Type                  | Description  |
 | ------------ | --------------------- | ------------ |
-| `/localization/odometry` | nav_msgs::msg::Odometry | Sample desc. |
+| `/tf` | nav_msgs::msg::Odometry | Transform from map to base_link. |
+| `/vehicle/status/velocity_status` | autoware_auto_vehicle_msgs::msg::VelocityReport | Sample desc. |
+| `/vehicle/status/steering_status` | autoware_auto_vehicle_msgs::msg::SteeringReport | Sample desc. |
 
 ### Output
 
 | Name         | Type                  | Description  |
 | ------------ | --------------------- | ------------ |
-| `/trajectory` | autoware_auto_planning_msgs::msg::Trajectory | Sample desc. |
+| Sample | Sample | Sample desc. |
 
-### Services and Actions
-
-| Name           | Type                   | Description  |
-| -------------- | ---------------------- | ------------ |
-| `service_name` | std_srvs::srv::Trigger | Sample desc. |
-
-### Parameters
-
-| Name         | Type | Description  |
-| ------------ | ---- | ------------ |
-| `param_name` | int  | Sample desc. |
 
 
 ## References / External links
