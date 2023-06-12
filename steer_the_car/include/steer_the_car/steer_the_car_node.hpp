@@ -67,18 +67,18 @@ private:
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
-  std::vector<std::tuple<double, double>> coordinates_list;
+  std::vector<std::tuple<double, double, double>> coordinates_list;
   size_t list_size;
   size_t list_index = 0;
   std::string file_path = "/home/czarek/autoware/trajectory.txt";
 
-  double cur_point_x, cur_point_y;
+  double cur_point_x, cur_point_y, cur_target_speed;
   double cur_car_x, cur_car_y, cur_car_z;
-  double dx, dy, distance;
+  double dx, dy, distance, calculated_acc;
 
-  double l_d = 2.0;
+  double l_d = 1.5;
   double min_ld = 1.0;
-  double max_ld = 2.0;
+  double max_ld = 5.0;
   double K_dd = 1.0;
   double wheel_base = 0.324;
   
@@ -99,10 +99,59 @@ private:
   double backward_accel_ratio_ = 1.0;
   double max_backward_velocity_ = 3.0;
 
-  int idd = 0;
-
   autoware_auto_control_msgs::msg::AckermannControlCommand prev_control_command_;
 };
 }  // namespace steer_the_car
+
+class PIDController {
+private:
+    double kp;
+    double ki; 
+    double kd; 
+    double desired_speed;
+    double max_acceleration;
+
+    double error;
+    double previous_error;
+    double integral;
+
+public:
+    PIDController(double kp, double ki, double kd, double desired_speed, double max_acceleration)
+        : kp(kp), ki(ki), kd(kd), desired_speed(desired_speed), max_acceleration(max_acceleration), error(0),
+          previous_error(0), integral(0) {}
+
+    double calculateAcceleration(double current_speed) {
+        error = desired_speed - current_speed;
+
+        // Proportional term
+        double p_term = kp * error;
+
+        // Integral term
+        integral += error;
+        double i_term = ki * integral;
+
+        // Derivative term
+        double derivative = error - previous_error;
+        double d_term = kd * derivative;
+
+        // Calculate acceleration
+        double acceleration = p_term + i_term + d_term;
+
+         // Limit acceleration within the maximum range
+        acceleration = std::min(std::max(acceleration, -max_acceleration), max_acceleration);
+
+        // Update previous error
+
+        // Update previous error
+        previous_error = error;
+
+        return acceleration;
+    }
+
+  void setDesiredSpeed(double speed) {
+        desired_speed = speed;
+    }
+};
+
 
 #endif  // STEER_THE_CAR__STEER_THE_CAR_NODE_HPP_

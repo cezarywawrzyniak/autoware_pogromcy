@@ -14,6 +14,9 @@
 
 #include "steer_the_car/steer_the_car_node.hpp"
 
+//                            kp    ki   kd   
+PIDController speedController(10.0, 0.1, 0.2, 3.0, 2.0);
+
 namespace steer_the_car
 {
 
@@ -38,7 +41,6 @@ void SteerTheCarNode::pub_arrow()
 {
   marker.header.frame_id = "map"; 
   marker.id = 0;
-  idd = idd+1;
   marker.type = visualization_msgs::msg::Marker::SPHERE;
   marker.action = 0;
   marker.lifetime = rclcpp::Duration(0, 1e9); 
@@ -84,18 +86,18 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
         std::cout << "Failed to open the file." << std::endl;
     }
 
-    double number1, number2;
+    double number1, number2, number3;
     std::string line;
 
     while (std::getline(file, line)) {
         std::istringstream iss(line);
-        if (!(iss >> number1 >> number2)) {
+        if (!(iss >> number1 >> number2 >> number3)) {
             std::cout << "Failed to read numbers from line: " << line << std::endl;
             break;
         }
 
-        std::cout << "X: " << number1 << ", Y: " << number2 << std::endl;
-        coordinates_list.push_back(std::make_tuple(number1, number2));
+        std::cout << "X: " << number1 << ", Y: " << number2 << ", SPEED: " << number3 << std::endl;
+        coordinates_list.push_back(std::make_tuple(number1, number2, number3));
 
         auto point = geometry_msgs::msg::Point();
         point.x = number1;
@@ -135,14 +137,10 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
     // GETTING CURRENT POINT TO FOLLOW
     if (list_index < list_size) {
         // Accessing the nth element using the indexing operator
-        std::tuple<double, double> element = coordinates_list[list_index];
+        std::tuple<double, double, double> element = coordinates_list[list_index];
 
         // Extract the values from the tuple
-        std::tie(cur_point_x, cur_point_y) = element;
-
-        // Print the values
-        std::cout << "-------------------------------------------------------------------------------------" << std::endl;
-        // std::cout << "Coordinate no: " << list_index << " X: " << cur_point_x << " Y: " << cur_point_y << std::endl;
+        std::tie(cur_point_x, cur_point_y, cur_target_speed) = element;        
     } 
     else 
     {
@@ -160,20 +158,20 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
     double yaw_degrees = yaw * 180.0 / M_PI;
 
     // Print the yaw angle
-    std::cout << "YAW DEGREES: " << yaw_degrees << std::endl;
+    std::cout << "-------------------------------------------------------------------------------------" << std::endl;
+    std::cout << "Yaw degrees: " << yaw_degrees << std::endl;
 
     // COMPUTE LOOK-AHEAD DISTANCE
-    // l_d = std::clamp(K_dd * longitudinal_vel_, min_ld, max_ld);
+    l_d = std::clamp(K_dd * longitudinal_vel_, min_ld, max_ld);
+    std::cout << "Look ahead distance: " << l_d << std::endl;
 
     // CALCULATE DISTANCE TO THE NEXT POINT
     dx = cur_car_x - cur_point_x;
     dy = cur_car_y - cur_point_y;
 
     distance = std::sqrt((dx * dx) + (dy * dy));
-    std::cout << marker2.points.size() << std::endl;
-    std::cout << "CAR X: " << cur_car_x << "CAR Y: " << cur_car_y << std::endl;
-    std::cout << "Coordinate no: " << list_index << " X: " << cur_point_x << " Y: " << cur_point_y << std::endl;
-    std::cout << "DISTANCE X: " << dx << " " << "DISTANCE Y: " << dy << std::endl;
+    std::cout << "Car X: " << cur_car_x << " " << "Car Y: " << cur_car_y << std::endl;
+    std::cout << "Coordinate no: " << list_index << " X: " << cur_point_x << " Y: " << cur_point_y << " Speed: " << cur_target_speed << std::endl;
     std::cout << "Distance to point: " << distance << std::endl;
     std::cout << "Point number: " << list_index << std::endl;
 
@@ -182,18 +180,8 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
 
     // COMPUTE STEERING ANGLE
     double steering_angle = std::atan((2*wheel_base*std::sin(alpha - yaw))/l_d);
-    // double steering_angle_radian = -steering_angle * (M_PI / 180.0);
-    // steering_angle = -steering_angle/M_PI;
     steering_angle = -steering_angle;
-
-    if (steering_angle > 0.5)
-    {
-      steering_angle = 0.5;
-    }
-    if (steering_angle < -0.5)
-    {
-      steering_angle = -0.5;
-    }
+    steering_angle = std::max(-0.5, std::min(steering_angle, 0.5));
 
     if (distance < l_d)
     {
@@ -201,17 +189,19 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
     }
     
     std::cout << "Steering Angle: " << steering_angle << std::endl;
-    // std::cout << "Steering Angle Radian: " << steering_angle_radian << std::endl;
-    // std::cout << "Steering Angle Controller: " << steering_angle_controller << std::endl;
-    std::cout << "Speed long: " << longitudinal_vel_ << std::endl;
-    std::cout << "Speed lat: " << lateral_vel_ << std::endl;
-    std::cout << "Heading lat: " << heading_rate_ << std::endl;
+    std::cout << "Speed: " << longitudinal_vel_ << std::endl;
+
+    speedController.setDesiredSpeed(cur_target_speed);
+    calculated_acc = speedController.calculateAcceleration(longitudinal_vel_);
+    std::cout << "Acceleration: " << calculated_acc << std::endl;
     std::cout << "-------------------------------------------------------------------------------------" << std::endl;
-    double acc = 1.0;
-    if (longitudinal_vel_ > 3.0)
-    {
-      acc = 0.0;
-    }
+
+  
+    // double acc = 1.0;
+    // if (longitudinal_vel_ > 3.0)
+    // {
+    //   acc = 0.0;
+    // }
 
     autoware_auto_control_msgs::msg::AckermannControlCommand cmd;
     cmd.stamp = this->now();
@@ -220,7 +210,7 @@ void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::Veloc
       cmd.lateral.steering_tire_rotation_rate = steering_angle_velocity;
 
       cmd.longitudinal.speed = 0.5;
-      cmd.longitudinal.acceleration = acc;
+      cmd.longitudinal.acceleration = calculated_acc;
     }
   
   prev_control_command_ = cmd;

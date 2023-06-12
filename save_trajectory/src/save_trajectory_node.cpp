@@ -102,11 +102,11 @@ void SaveTrajectoryNode::timer_callback()
           return;
         }
 
-  file << std::to_string(t.transform.translation.x) << " " << std::to_string(t.transform.translation.y) <<"\n";
+  file << std::to_string(t.transform.translation.x) << " " << std::to_string(t.transform.translation.y)  << " " << std::to_string(longi) << "\n";
   x_from_tf = t.transform.translation.x;
   y_from_tf = t.transform.translation.y;
   z_from_tf = t.transform.translation.z;
-  
+
   pose1.position.x = x_from_tf;
   pose1.position.y = y_from_tf;
   pose1.position.z = z_from_tf;
