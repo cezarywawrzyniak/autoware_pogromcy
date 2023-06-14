@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 x_coords = []
 y_coords = []
 
-with open('trajectory.txt', 'r') as file:
+trajectory_name = 'trajectory_driven.txt'
+# trajectory_name = 'trajectory_planned.txt'
+
+with open(trajectory_name, 'r') as file:
     lines = file.readlines()
 
 for i, line in enumerate(lines):
