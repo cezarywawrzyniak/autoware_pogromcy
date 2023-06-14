@@ -2,15 +2,22 @@ import cv2 as cv
 import numpy as np
 import yaml
 from scipy.spatial.distance import cdist
+import sys
+import os
 
 
-map = cv.imread("/home/borys/as/inny/autoware_map/imola/imola.pgm")
+for file in os.listdir(str(sys.argv[1])):
+    if file.endswith(".pgm"):
+        print(os.path.join(str(sys.argv[1]), file))
+        map = cv.imread(os.path.join(str(sys.argv[1]), file))
+    elif file.endswith(".yaml"):
+        with open(os.path.join(str(sys.argv[1]), file), "r") as stream:
+            try:
+                map_info = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+
 map_size = map.shape
-with open("/home/borys/as/inny/autoware_map/imola/imola.yaml", "r") as stream:
-    try:
-        map_info = yaml.safe_load(stream)
-    except yaml.YAMLError as exc:
-        print(exc)
 
 origin_cv = [- round(map_info['origin'][0] / map_info['resolution']), map_size[0] + round(map_info['origin'][1] / map_info['resolution'])]
 
@@ -44,27 +51,13 @@ while len(sorted_points) < len(coordinates):
     
     distances = cdist([sorted_points[-1]], remaining_points)
     min_index = np.argmin(distances)
-    sorted_points.append(remaining_points[min_index])  # Dodaj punkt do posortowanej tablicy
-    remaining_points = np.delete(remaining_points, min_index, axis=0)  # Usuń dodany punkt z pozostałych punktów
-
-
+    sorted_points.append(remaining_points[min_index])
+    remaining_points = np.delete(remaining_points, min_index, axis=0)
 
 trajectory = sorted_points[0::3]
-# if trajectory[1][0] < trajectory[0][0]:
-#     for pt in reversed(trajectory):
-#         cv.circle(driveable, pt, 1, (255,0,255))
-#         cv.imshow('map', cv.resize(driveable, None, fx=0.7, fy=0.7))
-#         cv.waitKey(20)
-# else:
-#     for pt in trajectory:
-#         cv.circle(driveable, pt, 1, (255,0,255))
-#         cv.imshow('map', cv.resize(driveable, None, fx=0.7, fy=0.7))
-#         cv.waitKey(20)
-
 trajectory = [[(x - origin_cv[0]) * map_info['resolution'],  (origin_cv[1] - y) * map_info['resolution']] for [x, y] in trajectory]
 
 
-print(trajectory)
 with open('trajectory.txt', 'w') as f:
     if trajectory[1][0] < trajectory[0][0]:
         for pt in reversed(trajectory):
@@ -74,9 +67,6 @@ with open('trajectory.txt', 'w') as f:
         for pt in trajectory:
             stringi = str(pt[0]) + ' ' + str(pt[1]) + ' 3.0\n'
             f.write(stringi)
-
-cv.imshow('map', cv.resize(driveable, None, fx=0.7, fy=0.7))
-cv.waitKey(0)
 
 
 
