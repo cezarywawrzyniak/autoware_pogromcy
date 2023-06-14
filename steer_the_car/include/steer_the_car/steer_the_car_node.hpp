@@ -141,8 +141,6 @@ public:
         acceleration = std::min(std::max(acceleration, -max_acceleration), max_acceleration);
 
         // Update previous error
-
-        // Update previous error
         previous_error = error;
 
         return acceleration;

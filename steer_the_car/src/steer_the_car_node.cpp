@@ -74,7 +74,6 @@ void SteerTheCarNode::pub_trajectory()
 
 void SteerTheCarNode::get_vel_topic(const autoware_auto_vehicle_msgs::msg::VelocityReport::SharedPtr msg)
 {
-  // std::cout <<"VELOCITY: " << msg->longitudinal_velocity << std::endl;
   longitudinal_vel_ = msg->longitudinal_velocity;
   lateral_vel_ = msg->lateral_velocity;
   heading_rate_ = msg->heading_rate;
