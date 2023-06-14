@@ -1,7 +1,7 @@
 # save_trajectory
 <!-- Required -->
 <!-- Package description -->
-Package was created to subscribe topics, and create trajectory msg, and then record it to rosbag. Points are saving every 500ms.
+Package was created to subscribe topics, and create trajectory msg, and then record it to rosbag. Points are saving every 100ms.
 
 ## Installation
 <!-- Required -->
@@ -45,39 +45,6 @@ Use ctr+s when you would like to end recording. Congrats, you saved your traject
 
 Now you can use your save file with trajectory. 
 
-
-# OLD_VERSION START
-
-### **Record trajectory!**
-
-Run in terminal **F1Tenth_v0.?.x86_64**, then in another terminal run 
-```bash
-ros2 launch f1tenth_launch f1tenth.launch.py map_path:=autoware_map/imola
-```
-Then in another terminal run:
-
-```bash
-ros2 launch save_trajectory save_trajectory.launch.py
-```
-
-
-### **If you record a bag, try it!**
-
-Build package with controller:
-```bash
-colcon build --symlink-install --packages-select trajectory_follower_node_2
-```
-
-Run in terminal **F1Tenth_v0.?.x86_64**, then in another terminals run:
-```bash
-ros2 launch f1tenth_launch f1tenth.launch.py map_path:=autoware_map/imola.
-ros2 launch trajectory_follower_node_2 simple_trajectory_follower.launch.xml
-ros2 bag play my_bag/
-```
-Check if you car is moving.
-
-If you want to change some parameters of your controller, fell free to make changes in /external/trajectory_follower_node_2/src/controller_node.cpp.
-
 # OLD_VERSION END
 
 ## API
@@ -95,9 +62,9 @@ If you want to change some parameters of your controller, fell free to make chan
 
 ### Output
 
-| Name         | Type                  | Description  |
-| ------------ | --------------------- | ------------ |
-| Sample | Sample | Sample desc. |
+| Name           | Type                                 | Description     |
+| -------------- | ------------------------------------ | --------------- |
+| trajectory.txt | txt file with 3 values in every line | Trajectory file |
 
 
 
