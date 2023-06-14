@@ -8,7 +8,6 @@ import os
 
 for file in os.listdir(str(sys.argv[1])):
     if file.endswith(".pgm"):
-        print(os.path.join(str(sys.argv[1]), file))
         map = cv.imread(os.path.join(str(sys.argv[1]), file))
     elif file.endswith(".yaml"):
         with open(os.path.join(str(sys.argv[1]), file), "r") as stream:
